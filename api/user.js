@@ -17,7 +17,8 @@ router.get("/register", (req, res, next) => {
 router.post(
   "/register",
   body("email").isEmail().trim().escape(),
-  body("password").isLength({ min: 8 }),
+  body("password").isStrongPassword({ minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1 })
+  .withMessage("Password must be greater than 8 and contain at least one uppercase letter, one lowercase letter, and one number"),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
