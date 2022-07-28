@@ -1,10 +1,12 @@
-var express = require("express");
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const { body, validationResult } = require("express-validator");
 const User = require("../models/Users");
+const jwt = require("jsonwebtoken");
 
+/*
 router.get("/", (req, res, next) => {
   res.send("respond with a resource");
 });
@@ -12,6 +14,7 @@ router.get("/", (req, res, next) => {
 router.get("/register", (req, res, next) => {
   res.render("register");
 });
+*/
 
 /* Register account */
 router.post(
@@ -49,8 +52,44 @@ router.post(
   }
 );
 
+/*
 router.get("/login", (req, res, next) => {
   res.render("login");
-});
+});*/
+
+router.post(
+  "/login",
+  body("email").isEmail().trim().escape(),
+  body("password"),
+  (req, res, next) => {
+    console.log(req.body.email);
+    const user = User.findOne({email: req.body.email}, (err, user) => {
+      if(err) throw err;
+      if(!user) {
+        return res.status(403).json({message: "Login failed"});
+      }
+      bcrypt.compare(req.body.password, user.password, (err, isMatch) => {
+        if (err) throw err;
+        if(isMatch) {
+          const jwtPayload = {
+            id: user._id,
+            email: user.email
+          };
+          jwt.sign(
+            jwtPayload,
+            process.env.SECRET,
+            {
+              expiresIn: 120
+            },
+            (err, token) => {
+              res.json({success: true, token});
+            }
+          )
+        }
+      })
+    })
+  }
+  )
+
 
 module.exports = router;
