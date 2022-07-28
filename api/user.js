@@ -79,7 +79,7 @@ router.post(
             jwtPayload,
             process.env.SECRET,
             {
-              expiresIn: 120
+              expiresIn: 300
             },
             (err, token) => {
               res.json({success: true, token});
